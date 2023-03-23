@@ -13,12 +13,24 @@ import { createBullBoard } from 'bull-board';
 import { BullAdapter } from 'bull-board/bullAdapter';
 import { SendMailProcessor } from './message/customer-message-processor.service';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { ClientKafka, ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
     BullModule.registerQueue({
       name: 'sendMail',
     }),
+    ClientsModule.register([
+      {
+        name: 'KAFKA_SERVICE',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            brokers: ['localhost:9092'],
+          },
+        },
+      },
+    ]),
     MailerModule.forRoot({
       transport: {
         host: 'smtp.ethereal.email',
@@ -46,6 +58,13 @@ import { MailerModule } from '@nestjs-modules/mailer';
     {
       provide: CustomerMessageInterface,
       useClass: CustomerMessageProducer,
+    },
+    {
+      provide: 'KAFKA_PRODUCER',
+      useFactory: async (kafkaService: ClientKafka) => {
+        return kafkaService.connect();
+      },
+      inject: ['KAFKA_SERVICE'],
     },
   ],
 })

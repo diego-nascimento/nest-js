@@ -1,5 +1,6 @@
 import { BullModule } from '@nestjs/bull';
-import { Module } from '@nestjs/common';
+import { Inject, Module } from '@nestjs/common';
+import { ClientKafka, ClientsModule, Transport } from '@nestjs/microservices';
 
 import { CustomerModule } from './modules/customer/customer.module';
 
